@@ -1,0 +1,4 @@
+six==1.11.0
+miniupnpc==2.0.2
+cryptography
+boto3==1.9.78

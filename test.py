@@ -1,0 +1,6 @@
+import json
+
+s={'state': 1, 'link_no': 0, 'heights': [63560, 63559], 'txcks': [66650636288, 66649587712], 'headers': [{'version': 1, 'link_no': 0, 'prev_block': '096f775183e694a1927472e030dfafe0828280305df0371face8fd41a0090000', 'merkle_root': '11186b1afaa6bbcf8fe4e2b9e17238ba13a458bf9057299c918facfc3761adf3', 'timestamp': 1564555583, 'bits': 1773, 'nonce': 231102326, 'miner': '5dc6298c4e56ac53f186f6ab1347c4cb5c86fd3f17ebda30bbbe7e4df3e441d1', 'sig_tee': '30460221008d923e942821b33124c1eadcd9e0893b2c6c819dcff7ebe24009ae6b5682d0a1022100b931b2286c7c708f3834fb3b15518830b15c4cc7958a0f7de1272153e68e68e300', 'txn_count': 1}, {'version': 1, 'link_no': 0, 'prev_block': 'c6ed63a5090d29bd457396ec3f872ddfc5700a7da0287b0ab42e5d112e000000', 'merkle_root': '70ad266185c6103fed23c02e42d6f751514153531842177ba052230f1a9cd7e6', 'timestamp': 1564555523, 'bits': 1773, 'nonce': 228463006, 'miner': '104e57d8592f91fbd70ee1373d16cbcae19a264cc47ab84ce2b862e9feb95543', 'sig_tee': '30450220673e04b48899f8c954fcfb086dfc24f408631e34a86e1cbd1a4067f245235299022100e36e391f6fb09800400caf2a7f1bbcba7a2ab0d73c4ff0b25f3f96e1b4067b0400', 'txn_count': 1}]}
+
+t=json.dumps(s)
+print(t)
