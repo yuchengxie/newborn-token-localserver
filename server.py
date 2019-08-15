@@ -1352,7 +1352,7 @@ def account1(account='1118hfRMRrJMgSCoV9ztyPcjcgcMZ1zThvqRDLUw3xCYkZwwTAbJ5o'):
     return sErr
 
 
-app.route('/', methods=['POST', 'GET'])
+@app.route('/')
 def hello():
     return 'hello'
 
