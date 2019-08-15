@@ -1353,11 +1353,8 @@ def account1(account='1118hfRMRrJMgSCoV9ztyPcjcgcMZ1zThvqRDLUw3xCYkZwwTAbJ5o'):
 
 
 app.route('/', methods=['POST', 'GET'])
-
-
 def hello():
     return 'hello'
-
 
 @app.route('/get_block', methods=['POST'])
 def get_block():
