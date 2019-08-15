@@ -1,5 +1,16 @@
-import re, sys, traceback, random, cgi
-import urllib, hashlib, socket, time, os, json
+import json
+from flask import Flask, request
+import re
+import sys
+import traceback
+import random
+import cgi
+import urllib
+import hashlib
+import socket
+import time
+import os
+import json
 
 from wsgiref.simple_server import make_server
 from binascii import hexlify, unhexlify
@@ -76,7 +87,7 @@ if cloud_factory_ == 'AWS':
     except:
         traceback.print_exc()
 
-#----------
+# ----------
 
 
 def application(environ, start_response):
@@ -114,7 +125,8 @@ def application(environ, start_response):
         status = 404
 
     errDesc = Error.status_code_desc(status)
-    sHtml = '<html><head><title>' + errDesc + '</title></head><body><h3>' + errDesc + '</h3></body></html>'
+    sHtml = '<html><head><title>' + errDesc + \
+        '</title></head><body><h3>' + errDesc + '</h3></body></html>'
     start_response(errDesc, [('Content-Type', 'text/html; charset=utf-8')])
     return [sHtml.encode('utf-8')]
 
@@ -208,12 +220,14 @@ class WSGIRouter:
                 handler, [])  # if already exist, reuse old one
             handler_patterns.append((compiled, num_groups))
 
-        self._handler_map = handler_map  #  {'admin/*/*':admin_process}
-        self._pattern_map = pattern_map  #  {admin:[(CompiledPatternRe,NumOfGroups),...]
-        self._url_mapping = url_mapping  #  [(CompiledPatternRe,admin_process),...]
+        self._handler_map = handler_map  # {'admin/*/*':admin_process}
+        # {admin:[(CompiledPatternRe,NumOfGroups),...]
+        self._pattern_map = pattern_map
+        # [(CompiledPatternRe,admin_process),...]
+        self._url_mapping = url_mapping
 
 
-#-----------
+# -----------
 
 
 def binary_input(environ):
@@ -225,7 +239,8 @@ def binary_result(code, binary, response,
                   headers=None):  # binary should be bytes
     headers2 = [('Content-Type', 'application/octet-stream'),
                 ('Content-Length', str(len(binary)))]
-    if headers: headers2.extend(headers)
+    if headers:
+        headers2.extend(headers)
     response(Error.status_code_desc(code), headers2)
     return [binary]
 
@@ -262,7 +277,8 @@ def http_result(code, d, response, headers=None):
     sRet = json.dumps(d).encode('utf-8')
     headers2 = [('Content-Type', 'application/json; charset=utf-8'),
                 ('Content-Length', str(len(sRet)))]
-    if headers: headers2.extend(headers)
+    if headers:
+        headers2.extend(headers)
 
     response(Error.status_code_desc(code), headers2)
     return [sRet]
@@ -290,9 +306,11 @@ def make_query_items_(bItem, sFmt):
             elif fmt == 'f':
                 v = float(v)
             elif fmt == 's':
-                if type(v) != str_type_: v = str(v)
+                if type(v) != str_type_:
+                    v = str(v)
             elif fmt == 'b':
-                if type(v) != bytes_type_: v = v.encode('utf-8')
+                if type(v) != bytes_type_:
+                    v = v.encode('utf-8')
             # else, ignore converting, fmt can be 'x'
             b.append(v)
 
@@ -311,7 +329,8 @@ def adjust_msg_format(param, fmt):
     try:
         for (attr, data_type
              ) in fmt:  # data_type can be any of 'nfsbx' or compose with '[]'
-            if attr not in param: return False
+            if attr not in param:
+                return False
 
             value = param[attr]
             if data_type == 'n':
@@ -342,7 +361,7 @@ def adjust_msg_format(param, fmt):
     return False
 
 
-#----------
+# ----------
 
 
 def server_sign(sequence, pks_out, last_uocks, version, tx_in, tx_out,
@@ -421,7 +440,8 @@ def txn_sheets_(environ, method, response, action):
                             sErr = str(e)
                             traceback.print_exc()
                         DbLocker.leave()
-                        if ret: return ret
+                        if ret:
+                            return ret
                     else:
                         sErr = 'require DB locker failed'
                 else:
@@ -430,7 +450,8 @@ def txn_sheets_(environ, method, response, action):
                 sErr = str(e)
                 traceback.print_exc()
 
-            if not sErr: sErr = 'unknown error'
+            if not sErr:
+                sErr = 'unknown error'
             bin_msg = protocol.UdpReject(sequence, sErr,
                                          'makesheet').binary(node.coin.magic)
             return binary_result(200, bin_msg, response)
@@ -467,14 +488,16 @@ def txn_sheets_(environ, method, response, action):
                         sErr = str(e)
                         traceback.print_exc()
                     DbLocker.leave()
-                    if ret: return ret
+                    if ret:
+                        return ret
                 else:
                     sErr = 'require DB locker failed'
             except Exception as e:
                 sErr = str(e)
                 traceback.print_exc()
 
-            if not sErr: sErr = 'unknown error'
+            if not sErr:
+                sErr = 'unknown error'
             bin_msg = protocol.UdpReject(0, sErr,
                                          'transaction').binary(node.coin.magic)
             return binary_result(200, bin_msg, response)
@@ -546,7 +569,8 @@ def txn_sheets_(environ, method, response, action):
                             sErr = str(e)
                             traceback.print_exc()
                         DbLocker.leave()
-                        if ret: return ret
+                        if ret:
+                            return ret
                     else:
                         sErr = 'require DB locker failed'
                 else:
@@ -555,7 +579,8 @@ def txn_sheets_(environ, method, response, action):
                 sErr = str(e)
                 traceback.print_exc()
 
-            if not sErr: sErr = 'unknown error'
+            if not sErr:
+                sErr = 'unknown error'
             bin_msg = protocol.UdpReject(0, sErr,
                                          'state').binary(node.coin.magic)
             return binary_result(200, bin_msg, response)
@@ -589,7 +614,8 @@ def txn_sheets_(environ, method, response, action):
                             else:
                                 node._apiserver_cmd.insert(
                                     0, ('relay_sheet', msg, data))
-                                succNum += 1  # not reply: protocol.UdpConfirm(util.sha256d(data[24:-1]),0xffffffff)
+                                # not reply: protocol.UdpConfirm(util.sha256d(data[24:-1]),0xffffffff)
+                                succNum += 1
                         except Exception as e:
                             errNum += 1
                             traceback.print_exc()
@@ -645,7 +671,8 @@ def txn_state_(environ, method, response, action):
                             sErr = str(e)
                             traceback.print_exc()
                         DbLocker.leave()
-                        if ret: return ret
+                        if ret:
+                            return ret
                     else:
                         sErr = 'require DB locker failed'
                 else:
@@ -654,7 +681,8 @@ def txn_state_(environ, method, response, action):
                 sErr = str(e)
                 traceback.print_exc()
 
-            if not sErr: sErr = 'unknown error'
+            if not sErr:
+                sErr = 'unknown error'
             bin_msg = protocol.UdpReject(0, sErr,
                                          'utxos').binary(node.coin.magic)
             return binary_result(200, bin_msg, response)
@@ -670,7 +698,8 @@ def txn_state_(environ, method, response, action):
                 else:
                     bk_hash = unhexlify(bk_hash)
                 heights = param.get('hi', [])
-                if type(heights) != list: heights = [heights]
+                if type(heights) != list:
+                    heights = [heights]
                 heights = [int(h) for h in heights]
 
                 if DbLocker.wait_enter(15):
@@ -688,7 +717,8 @@ def txn_state_(environ, method, response, action):
                                     blocks.append(bk)
                                     exists.append(bk.height)
                             for hi in heights:
-                                if hi < 0: hi = highest + hi + 1
+                                if hi < 0:
+                                    hi = highest + hi + 1
                                 if hi >= 0 and (hi not in exists):
                                     bk = node.block_get2(hi)
                                     if bk:
@@ -711,14 +741,16 @@ def txn_state_(environ, method, response, action):
                         sErr = str(e)
                         traceback.print_exc()
                     DbLocker.leave()
-                    if ret: return ret
+                    if ret:
+                        return ret
                 else:
                     sErr = 'require DB locker failed'
             except Exception as e:
                 sErr = str(e)
                 traceback.print_exc()
 
-            if not sErr: sErr = 'unknown error'
+            if not sErr:
+                sErr = 'unknown error'
             bin_msg = protocol.UdpReject(0, sErr,
                                          'blocks').binary(node.coin.magic)
             return binary_result(200, bin_msg, response)
@@ -733,7 +765,8 @@ def txn_state_(environ, method, response, action):
                 num = min(int(param.get('num', '0')),
                           1024)  # max get 1024 record
                 uocks = param.get('uock', [])
-                if type(uocks) != list: uocks = [uocks]
+                if type(uocks) != list:
+                    uocks = [uocks]
                 uocks = [int(u, 16) for u in uocks]
 
                 if uocks or (num and account):
@@ -764,7 +797,7 @@ def txn_state_(environ, method, response, action):
                                     hi.append(u.height)
                                     idx.append(((
                                         (u.uock >> 20) & 0xffff) << 16)
-                                               | (u.uock & 0xffff))
+                                        | (u.uock & 0xffff))
                                     txns.append(u.get_txn())
 
                                 bin_msg = protocol.UtxoState(
@@ -776,7 +809,8 @@ def txn_state_(environ, method, response, action):
                             sErr = str(e)
                             traceback.print_exc()
                         DbLocker.leave()
-                        if ret: return ret
+                        if ret:
+                            return ret
                     else:
                         sErr = 'require DB locker failed'
                 else:
@@ -785,13 +819,14 @@ def txn_state_(environ, method, response, action):
                 sErr = str(e)
                 traceback.print_exc()
 
-            if not sErr: sErr = 'unknown error'
+            if not sErr:
+                sErr = 'unknown error'
             bin_msg = protocol.UdpReject(0, sErr,
                                          'txns').binary(node.coin.magic)
             return binary_result(200, bin_msg, response)
 
 
-#-----
+# -----
 
 re_newline_ = re.compile(r'\r\n|\n|\r')
 
@@ -808,7 +843,8 @@ DBG_PUBKEY = b'\x03\xbd\xfaa\x92\x9d\xf7\x1bj\xed\xb7\x88\x8f.\xe7\xd3c\xbb\xc7\
 
 def testing2_(environ, method, response, action):
     global _dbg_nonce, _dbg_query_at, _dbg_start_at, _dbg_session
-    if not __LocalDbg__: return None
+    if not __LocalDbg__:
+        return None
 
     if action == 'debug':  # for testing
         if method == 'POST':
@@ -858,7 +894,8 @@ def testing2_(environ, method, response, action):
                     ret = str(e)
                     traceback.print_exc()
 
-            if type(ret) != str: ret = ''
+            if type(ret) != str:
+                ret = ''
             response('200 OK', [('Content-Type', 'text/plain; charset=utf-8')])
             return [ret.encode('utf-8')]
 
@@ -929,7 +966,7 @@ global_router = WSGIRouter([
     ('/testing/(.*?)', testing_),
 ])
 
-#----------
+# ----------
 POET_PUBKEY = b'\x03\xdeC%\xe7HO\x8b\xcb\xcb/\x85M\x93\xc9/\xda\x0bm\xbe\xbc\xe7]X\x06|\xeaP\xfb\xe5[\xfd\t'
 consensus.init_tee(
     wallet.Address(pub_key=POET_PUBKEY, vcn=0, coin_type=b'\x00'))
@@ -1034,15 +1071,21 @@ else:  # 'NODE' or 'SYNC'
             # db_backup.readonly = True
 
     def s3_upload_db(s3alias):  # such as 'db-user1-node-190616'
-        if not __LocalDbg__: return 0
-        if not db_backup: return 0
-        if not exit_node(): return 0
+        if not __LocalDbg__:
+            return 0
+        if not db_backup:
+            return 0
+        if not exit_node():
+            return 0
         return db_backup.s3_upload_db(local_datadir_, s3alias)
 
     def s3_download_db(s3alias):  # such as 'db-user1-node-190616'
-        if not __LocalDbg__: return 0
-        if not db_backup: return 0
-        if not exit_node(): return 0
+        if not __LocalDbg__:
+            return 0
+        if not db_backup:
+            return 0
+        if not exit_node():
+            return 0
         return db_backup.s3_download_db(local_datadir_, s3alias)
 
     if cloud_factory_ == 'AWS':
@@ -1100,7 +1143,8 @@ else:  # 'NODE' or 'SYNC'
                              address=('0.0.0.0', 30303),
                              link_no=link_no_,
                              coin=curr_coin)
-    node.log_level = node.LOG_LEVEL_INFO  # LOG_LEVEL_DEBUG LOG_LEVEL_INFO  # default is LOG_LEVEL_ERROR
+    # LOG_LEVEL_DEBUG LOG_LEVEL_INFO  # default is LOG_LEVEL_ERROR
+    node.log_level = node.LOG_LEVEL_INFO
 
     check_run_patch()
     basenode.startServer(node, db_backup)
@@ -1114,24 +1158,6 @@ else:  # 'NODE' or 'SYNC'
 #   httpd = make_server('', 8080, application)
 #   httpd.serve_forever()
 
-import re, sys, traceback, random, cgi
-import urllib, hashlib, socket, time, os, json
-
-from wsgiref.simple_server import make_server
-from binascii import hexlify, unhexlify
-
-from nbc import util
-from nbc import wallet
-from nbc import coins
-from nbc import protocol
-from nbc import consensus
-
-from nbc.dbconfig import config
-from nbc.node import basenode
-from nbc.blockchain import DbLocker
-
-from flask import Flask, request
-import json
 
 if sys.version_info.major == 3:
     # urlparse.xx: urlencode, urljoin, urlparse, unquote, parse_qs, parse_qsl ...
@@ -1211,7 +1237,7 @@ def account():
         account = request.form.get('account')
         print('>>> post account:', account)
         # account = param.get('addr','')  # addr should be utf-8 string
-        #todo uock
+        # todo uock
         uock = 0
         uock2 = 0
         # uock = int(param.get('uock', '0'))  # uock from
@@ -1251,7 +1277,8 @@ def account():
                     sErr = str(e)
                     traceback.print_exc()
                 DbLocker.leave()
-                if ret: return ret
+                if ret:
+                    return ret
             else:
                 sErr = 'require DB locker failed'
         else:
@@ -1272,7 +1299,7 @@ def account1(account='1118hfRMRrJMgSCoV9ztyPcjcgcMZ1zThvqRDLUw3xCYkZwwTAbJ5o'):
         # account = request.form.get('account')
         print('>>> post account:', account)
         # account = param.get('addr','')  # addr should be utf-8 string
-        #todo uock
+        # todo uock
         uock = 0
         uock2 = 0
         # uock = int(param.get('uock', '0'))  # uock from
@@ -1309,7 +1336,8 @@ def account1(account='1118hfRMRrJMgSCoV9ztyPcjcgcMZ1zThvqRDLUw3xCYkZwwTAbJ5o'):
                     sErr = str(e)
                     traceback.print_exc()
                 DbLocker.leave()
-                if ret: return ret
+                if ret:
+                    return ret
             else:
                 sErr = 'require DB locker failed'
         else:
@@ -1324,6 +1352,13 @@ def account1(account='1118hfRMRrJMgSCoV9ztyPcjcgcMZ1zThvqRDLUw3xCYkZwwTAbJ5o'):
     return sErr
 
 
+app.route('/', methods=['POST', 'GET'])
+
+
+def hello():
+    return 'hello'
+
+
 @app.route('/get_block', methods=['POST'])
 def get_block():
     # hi=None
@@ -1336,7 +1371,8 @@ def get_block():
     else:
         c = hi.split(",")
         heights = c
-        if type(heights) != list: heights = [heights]
+        if type(heights) != list:
+            heights = [heights]
         heights = [int(h) for h in heights]
     bk_hash = None
     if not bk_hash:
@@ -1360,7 +1396,8 @@ def get_block():
                         exists.append(bk.height)
                 print('>>> heights:', heights)
                 for hi in heights:
-                    if hi < 0: hi = highest + hi + 1
+                    if hi < 0:
+                        hi = highest + hi + 1
                     if hi >= 0 and (hi not in exists):
                         bk = node.block_get2(hi)
                         if bk:
@@ -1375,7 +1412,7 @@ def get_block():
                     hh.append(bk.height)
                     tt.append(bk._blockid << 20)
                 bin_msg = protocol.ReplyHeaders(node.link_no, hh, tt, bb)
-                #tojson
+                # tojson
                 dic = ModelReplyHeaders.toDict(bin_msg)
                 jsonStr = json.dumps(dic)
                 print('>>> jsonStr:', jsonStr)
@@ -1384,7 +1421,8 @@ def get_block():
             sErr = str(e)
             traceback.print_exc()
         DbLocker.leave()
-        if not sErr: sErr = 'unknown error'
+        if not sErr:
+            sErr = 'unknown error'
         bin_msg = protocol.UdpReject(0, sErr, 'blocks').binary(node.coin.magic)
         # return binary_result(200,bin_msg,response)
         return 'error'
@@ -1398,7 +1436,7 @@ def get_uock():
     try:
         uock = request.form.get('uock')
         print('>>> post uocks:', uock)
-        uock=int(uock)
+        uock = int(uock)
         account = '1118hfRMRrJMgSCoV9ztyPcjcgcMZ1zThvqRDLUw3xCYkZwwTAbJ5o'
         uocks = [uock]
         # param = http_input(environ)
@@ -1441,8 +1479,8 @@ def get_uock():
                         bin_msg = protocol.UtxoState(node._link_no, hi, idx,
                                                      txns)
                         dic = ModelUtxoState.toDict(bin_msg)
-                        
-                        print('>>> bin_msg:', bin_msg)      
+
+                        print('>>> bin_msg:', bin_msg)
                         # print('>>> dic:', dic)
                         jsonStr = json.dumps(dic)
                         print('>>> jsonStr:', jsonStr)
@@ -1453,7 +1491,8 @@ def get_uock():
                     sErr = str(e)
                     traceback.print_exc()
                 DbLocker.leave()
-                if ret: return ret
+                if ret:
+                    return ret
             else:
                 sErr = 'require DB locker failed'
         else:
@@ -1462,7 +1501,8 @@ def get_uock():
         sErr = str(e)
         traceback.print_exc()
 
-    if not sErr: sErr = 'unknown error'
+    if not sErr:
+        sErr = 'unknown error'
     bin_msg = protocol.UdpReject(0, sErr, 'txns').binary(node.coin.magic)
     # return binary_result(200, bin_msg, response)
     return 'error'
